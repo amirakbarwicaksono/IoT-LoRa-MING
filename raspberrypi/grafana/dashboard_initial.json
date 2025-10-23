@@ -1,0 +1,84 @@
+{
+  "id": null,
+  "dashboard": {
+    "annotations": {
+      "list": []
+    },
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [],
+    "panels": [
+      {
+        "type": "timeseries",
+        "title": "MQ135 (ppm)",
+        "datasource": "InfluxDB",
+        "targets": [
+          {
+            "query": "SELECT mean(\"mq135\") FROM \"sensor_readings\" WHERE $timeFilter GROUP BY time($interval) fill(null)",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 0, "w": 12, "h": 6 }
+      },
+      {
+        "type": "timeseries",
+        "title": "MQ7 (ppm)",
+        "datasource": "InfluxDB",
+        "targets": [
+          {
+            "query": "SELECT mean(\"mq7\") FROM \"sensor_readings\" WHERE $timeFilter GROUP BY time($interval) fill(null)",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 0, "w": 12, "h": 6 }
+      },
+      {
+        "type": "timeseries",
+        "title": "MQ9 (ppm)",
+        "datasource": "InfluxDB",
+        "targets": [
+          {
+            "query": "SELECT mean(\"mq9\") FROM \"sensor_readings\" WHERE $timeFilter GROUP BY time($interval) fill(null)",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 6, "w": 12, "h": 6 }
+      },
+      {
+        "type": "timeseries",
+        "title": "Temperature (°C)",
+        "datasource": "InfluxDB",
+        "targets": [
+          {
+            "query": "SELECT mean(\"temp\") FROM \"sensor_readings\" WHERE $timeFilter GROUP BY time($interval) fill(null)",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "x": 12, "y": 6, "w": 12, "h": 6 }
+      },
+      {
+        "type": "timeseries",
+        "title": "Humidity (%)",
+        "datasource": "InfluxDB",
+        "targets": [
+          {
+            "query": "SELECT mean(\"hum\") FROM \"sensor_readings\" WHERE $timeFilter GROUP BY time($interval) fill(null)",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "x": 0, "y": 12, "w": 24, "h": 6 }
+      }
+    ],
+    "schemaVersion": 28,
+    "tags": [],
+    "templating": { "list": [] },
+    "time": { "from": "now-6h", "to": "now" },
+    "timepicker": {},
+    "title": "IoT LoRa MING - Gas & Env Dashboard",
+    "uid": null,
+    "version": 1
+  },
+  "overwrite": false
+}

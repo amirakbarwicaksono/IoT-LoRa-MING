@@ -1,0 +1,33 @@
+# Ignore build and system files
+# PlatformIO / Arduino
+.vscode/
+.pio/
+build/
+libdeps/
+*.bin
+*.elf
+*.pioenvs/
+
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
+.env.*
+
+# Node-RED / Grafana / InfluxDB
+node_modules/
+flows_cred.json
+*.db
+*.log
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+*.swo
+
+# Archives & exports
+*.zip
+backup_*.tar.gz

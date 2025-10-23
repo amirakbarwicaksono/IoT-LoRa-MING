@@ -1,0 +1,4 @@
+# Run in InfluxDB CLI or via HTTP API
+CREATE DATABASE iotdb;
+CREATE USER "iotuser" WITH PASSWORD 'iotpass';
+GRANT ALL ON "iotdb" TO "iotuser";

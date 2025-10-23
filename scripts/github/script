@@ -1,0 +1,80 @@
+# === Buat root folder proyek ===
+New-Item -ItemType Directory -Force -Path "iot-lora-ming"
+
+# Pindah ke dalam proyek
+Set-Location "iot-lora-ming"
+
+# === File utama ===
+New-Item -ItemType File -Force -Path "README.md" -Value "# IoT LoRa MING Stack Project"
+New-Item -ItemType File -Force -Path "LICENSE" -Value "MIT License placeholder"
+New-Item -ItemType File -Force -Path ".gitignore" -Value "# Ignore build and system files"
+New-Item -ItemType File -Force -Path ".env.example" -Value @"
+MQTT_USER=admin
+MQTT_PASS=password
+INFLUX_DB=iotdb
+INFLUX_USER=iotuser
+INFLUX_PASS=iotpass
+"@
+
+# === Folder docs ===
+New-Item -ItemType Directory -Force -Path "docs"
+New-Item -ItemType File -Force -Path "docs/architecture-diagram.png"
+New-Item -ItemType File -Force -Path "docs/data-flow.png"
+New-Item -ItemType File -Force -Path "docs/sensor-pinout.png"
+New-Item -ItemType File -Force -Path "docs/system-overview.md" -Value "# System Overview"
+New-Item -ItemType File -Force -Path "docs/setup-guide.md" -Value "# Setup Guide"
+
+# === Folder hardware ===
+New-Item -ItemType Directory -Force -Path "hardware/esp32-transmitter/src"
+New-Item -ItemType Directory -Force -Path "hardware/esp32-transmitter/lib/LoRa"
+New-Item -ItemType File -Force -Path "hardware/esp32-transmitter/src/main.ino" -Value "// Transmitter code"
+New-Item -ItemType File -Force -Path "hardware/esp32-transmitter/src/sensor_readings.cpp" -Value "// Sensor readings"
+New-Item -ItemType File -Force -Path "hardware/esp32-transmitter/platformio.ini" -Value "[env:esp32dev]"
+New-Item -ItemType File -Force -Path "hardware/esp32-transmitter/README.md" -Value "# ESP32 Transmitter"
+
+New-Item -ItemType Directory -Force -Path "hardware/esp32-gateway/src"
+New-Item -ItemType Directory -Force -Path "hardware/esp32-gateway/lib/LoRa"
+New-Item -ItemType File -Force -Path "hardware/esp32-gateway/src/main.ino" -Value "// Gateway code"
+New-Item -ItemType File -Force -Path "hardware/esp32-gateway/src/mqtt_publish.cpp" -Value "// MQTT publish"
+New-Item -ItemType File -Force -Path "hardware/esp32-gateway/platformio.ini" -Value "[env:esp32dev]"
+New-Item -ItemType File -Force -Path "hardware/esp32-gateway/README.md" -Value "# ESP32 Gateway"
+
+New-Item -ItemType File -Force -Path "hardware/wiring-diagram.png"
+
+# === Folder raspberrypi ===
+New-Item -ItemType Directory -Force -Path "raspberrypi/mqtt/users"
+New-Item -ItemType File -Force -Path "raspberrypi/mqtt/mosquitto.conf" -Value "# Mosquitto config"
+New-Item -ItemType File -Force -Path "raspberrypi/mqtt/users/password_file.txt" -Value "admin:password"
+
+New-Item -ItemType Directory -Force -Path "raspberrypi/influxdb"
+New-Item -ItemType File -Force -Path "raspberrypi/influxdb/create_database.txt" -Value "CREATE DATABASE iotdb"
+New-Item -ItemType File -Force -Path "raspberrypi/influxdb/influxdb.conf" -Value "# InfluxDB config"
+New-Item -ItemType File -Force -Path "raspberrypi/influxdb/sample_queries.txt" -Value "SELECT * FROM gas_data"
+
+New-Item -ItemType Directory -Force -Path "raspberrypi/node-red"
+New-Item -ItemType File -Force -Path "raspberrypi/node-red/flows.json" -Value "{}"
+New-Item -ItemType File -Force -Path "raspberrypi/node-red/credentials.json" -Value "# Optional credentials"
+
+New-Item -ItemType Directory -Force -Path "raspberrypi/grafana"
+New-Item -ItemType File -Force -Path "raspberrypi/grafana/dashboard.json" -Value "{}"
+New-Item -ItemType File -Force -Path "raspberrypi/grafana/datasource.json" -Value "{}"
+
+# === Folder data ===
+New-Item -ItemType Directory -Force -Path "data/sample"
+New-Item -ItemType File -Force -Path "data/sample/sensor_data.json" -Value "{}"
+New-Item -ItemType File -Force -Path "data/sample/sensor_data.csv" -Value "timestamp,mq135,mq7,mq9,temp,humidity"
+
+New-Item -ItemType Directory -Force -Path "data/influx_export"
+New-Item -ItemType File -Force -Path "data/influx_export/backup_2025-10-23.zip"
+
+# === Folder scripts ===
+New-Item -ItemType Directory -Force -Path "scripts/python"
+New-Item -ItemType File -Force -Path "scripts/python/mqtt_test.py" -Value "# Test MQTT publish"
+New-Item -ItemType File -Force -Path "scripts/python/influx_query.py" -Value "# Query InfluxDB"
+New-Item -ItemType File -Force -Path "scripts/python/data_cleaner.py" -Value "# Clean sensor data"
+
+New-Item -ItemType Directory -Force -Path "scripts/bash"
+New-Item -ItemType File -Force -Path "scripts/bash/start_services.sh" -Value "#!/bin/bash`nservice mosquitto start`nservice influxdb start`nnode-red-start"
+New-Item -ItemType File -Force -Path "scripts/bash/backup_influx.sh" -Value "#!/bin/bash`ninflux backup /var/backups/influxdb"
+
+Write-Host "✅ Struktur proyek IoT LoRa MING berhasil dibuat!"

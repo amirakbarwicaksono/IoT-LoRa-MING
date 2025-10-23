@@ -1,0 +1,35 @@
+[
+  {
+    "id": "influx-write-flow",
+    "type": "tab",
+    "label": "MQTT to InfluxDB",
+    "nodes": [
+      {
+        "id": "mqtt-in",
+        "type": "mqtt in",
+        "z": "influx-write-flow",
+        "name": "MQTT In",
+        "topic": "iot/lora/#",
+        "broker": "local-mqtt"
+      },
+      {
+        "id": "json",
+        "type": "json",
+        "z": "influx-write-flow",
+        "name": "Parse JSON"
+      },
+      {
+        "id": "influx-out",
+        "type": "influxdb out",
+        "z": "influx-write-flow",
+        "influxdb": "local-influxdb",
+        "name": "InfluxDB Write",
+        "measurement": "sensor_readings"
+      }
+    ],
+    "wires": [
+      ["json"],
+      ["influx-out"]
+    ]
+  }
+]

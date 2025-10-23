@@ -1,0 +1,105 @@
+[
+  {
+    "id": "1a2b3c4d5e6f",
+    "type": "tab",
+    "label": "MQTT → InfluxDB",
+    "disabled": false,
+    "info": ""
+  },
+  {
+    "id": "mqtt-in-1",
+    "type": "mqtt in",
+    "z": "1a2b3c4d5e6f",
+    "name": "LoRa MQTT",
+    "topic": "iot/lora/#",
+    "qos": "1",
+    "broker": "mosquitto_local",
+    "x": 160,
+    "y": 80,
+    "wires": [
+      [
+        "json-parse"
+      ]
+    ]
+  },
+  {
+    "id": "json-parse",
+    "type": "json",
+    "z": "1a2b3c4d5e6f",
+    "name": "Parse JSON",
+    "property": "payload",
+    "action": "obj",
+    "x": 340,
+    "y": 80,
+    "wires": [
+      [
+        "map-to-influx"
+      ]
+    ]
+  },
+  {
+    "id": "map-to-influx",
+    "type": "function",
+    "z": "1a2b3c4d5e6f",
+    "name": "Map to Influx payload",
+    "func": "// Expect msg.payload to be an object from transmitter\n// Build msg.payload as array for influxdb out node\nvar p = msg.payload || {};\nvar nodeId = p.id || (msg.topic ? msg.topic.split('/').pop() : 'unknown');\nvar fields = {};\n// parse numeric fields (safely)\nfunction toNum(v){\n  if (v===undefined || v===null) return null;\n  var n = Number(v);\n  return isNaN(n)?null:n;\n}\n\nfields.mq135 = toNum(p.mq135);\nfields.mq7   = toNum(p.mq7);\nfields.mq9   = toNum(p.mq9);\nfields.temp  = toNum(p.temp);\nfields.hum   = toNum(p.hum);\n\n// Build influx payload (node-red-contrib-influxdb expects array or single object)\nvar measurement = \"sensor_readings\";\nvar point = {\n    measurement: measurement,\n    fields: {},\n    tags: { node: nodeId }\n};\n// assign only numeric fields\nfor (var k in fields) {\n    if (fields[k] !== null) point.fields[k] = fields[k];\n}\n\nmsg.payload = [point];\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 560,
+    "y": 80,
+    "wires": [
+      [
+        "influx-out"
+      ]
+    ]
+  },
+  {
+    "id": "influx-out",
+    "type": "influxdb out",
+    "z": "1a2b3c4d5e6f",
+    "influxdb": "local-influxdb",
+    "name": "Write to InfluxDB",
+    "measurement": "",
+    "precision": "",
+    "retentionPolicy": "",
+    "x": 780,
+    "y": 80,
+    "wires": []
+  },
+
+  // ======= Configuration nodes (references) =======
+  {
+    "id": "mosquitto_local",
+    "type": "mqtt-broker",
+    "name": "Mosquitto Local",
+    "broker": "127.0.0.1",
+    "port": "1883",
+    "clientid": "node-red-influx",
+    "usetls": false,
+    "compatmode": true,
+    "keepalive": "60",
+    "cleansession": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "local-influxdb",
+    "type": "influxdb",
+    "hostname": "127.0.0.1",
+    "port": "8086",
+    "protocol": "http",
+    "database": "iotdb",
+    "name": "InfluxDB Local",
+    "usetls": false,
+    "tls": ""
+  }
+]
