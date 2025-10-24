@@ -89,10 +89,74 @@
 
 //   delay(50);
 // }
+
+//Before Iterasi
+
+// #include <Arduino.h>
+// #include <SPI.h>
+// #include <LoRa.h>
+// #include <ArduinoJson.h>
+// #include "secure_comm.h"
+
+// #define LORA_SS   15
+// #define LORA_RST  14
+// #define LORA_DIO0 26
+
+// void setup() {
+//   Serial.begin(115200);
+//   Serial.println("\n[RX] Secure LoRa Receiver Starting...");
+
+//   LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
+//   if (!LoRa.begin(433E6)) {
+//     Serial.println("[RX] LoRa init failed. Check wiring!");
+//     while (true);
+//   }
+
+//   Serial.println("[RX] LoRa init OK. Waiting for packets...");
+// }
+
+
+// void loop() {
+//   int packetSize = LoRa.parsePacket();
+//   if (!packetSize) return;
+
+//   String incoming = "";
+//   while (LoRa.available()) incoming += (char)LoRa.read();
+
+//   int sepIndex = incoming.indexOf('|');
+//   if (sepIndex == -1) {
+//     Serial.println("[RX] Invalid format!");
+//     return;
+//   }
+
+//   String cipherHex = incoming.substring(0, sepIndex);
+//   String hmacReceived = incoming.substring(sepIndex + 1);
+
+//   String computedHmac = computeHMAC(cipherHex);
+//   if (computedHmac != hmacReceived) {
+//     Serial.println("[RX] ❌ HMAC mismatch. Packet rejected!");
+//     return;
+//   }
+
+//   uint8_t cipherBytes[256];
+//   int cipherLen = hexToBytes(cipherHex, cipherBytes);
+//   String decrypted = aesDecrypt(cipherBytes, cipherLen);
+
+//   Serial.println("[RX] ✅ Verified and decrypted JSON:");
+//   Serial.println(decrypted);
+
+//   StaticJsonDocument<256> doc;
+//   if (deserializeJson(doc, decrypted)) {
+//     Serial.println("[RX] ⚠️ JSON parse error!");
+//     return;
+//   }
+
+//   Serial.printf("[RX] MQ135: %.2f | MQ7: %.2f | MQ9: %.2f | Temp: %.2f | Hum: %.2f\n",
+//                 (float)doc["MQ135"], (float)doc["MQ7"], (float)doc["MQ9"],
+//                 (float)doc["Temp"], (float)doc["Hum"]);
+// }
 #include <Arduino.h>
-#include <SPI.h>
 #include <LoRa.h>
-#include <ArduinoJson.h>
 #include "secure_comm.h"
 
 #define LORA_SS   15
@@ -101,54 +165,31 @@
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("\n[RX] Secure LoRa Receiver Starting...");
-
+  Serial.println("[RX] Secure LoRa Receiver Starting...");
+  
   LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
   if (!LoRa.begin(433E6)) {
-    Serial.println("[RX] LoRa init failed. Check wiring!");
+    Serial.println("[RX] LoRa init failed!");
     while (true);
   }
-
-  Serial.println("[RX] LoRa init OK. Waiting for packets...");
+  Serial.println("[RX] LoRa init OK.");
 }
-
 
 void loop() {
   int packetSize = LoRa.parsePacket();
-  if (!packetSize) return;
+  if (packetSize) {
+    String received = "";
+    while (LoRa.available()) {
+      received += (char)LoRa.read();
+    }
 
-  String incoming = "";
-  while (LoRa.available()) incoming += (char)LoRa.read();
+    Serial.println("[RX] Received encrypted packet:");
+    Serial.println(received);
 
-  int sepIndex = incoming.indexOf('|');
-  if (sepIndex == -1) {
-    Serial.println("[RX] Invalid format!");
-    return;
+    String decrypted = decryptAndVerify(received);
+    if (decrypted != "") {
+      Serial.println("[RX]  HMAC OK! Decrypted payload:");
+      Serial.println(decrypted);
+    }
   }
-
-  String cipherHex = incoming.substring(0, sepIndex);
-  String hmacReceived = incoming.substring(sepIndex + 1);
-
-  String computedHmac = computeHMAC(cipherHex);
-  if (computedHmac != hmacReceived) {
-    Serial.println("[RX] ❌ HMAC mismatch. Packet rejected!");
-    return;
-  }
-
-  uint8_t cipherBytes[256];
-  int cipherLen = hexToBytes(cipherHex, cipherBytes);
-  String decrypted = aesDecrypt(cipherBytes, cipherLen);
-
-  Serial.println("[RX] ✅ Verified and decrypted JSON:");
-  Serial.println(decrypted);
-
-  StaticJsonDocument<256> doc;
-  if (deserializeJson(doc, decrypted)) {
-    Serial.println("[RX] ⚠️ JSON parse error!");
-    return;
-  }
-
-  Serial.printf("[RX] MQ135: %.2f | MQ7: %.2f | MQ9: %.2f | Temp: %.2f | Hum: %.2f\n",
-                (float)doc["MQ135"], (float)doc["MQ7"], (float)doc["MQ9"],
-                (float)doc["Temp"], (float)doc["Hum"]);
 }
