@@ -155,9 +155,98 @@
 //                 (float)doc["MQ135"], (float)doc["MQ7"], (float)doc["MQ9"],
 //                 (float)doc["Temp"], (float)doc["Hum"]);
 // }
+
+// // Before Added Wifi & Mqtt
+// #include <Arduino.h>
+// #include <LoRa.h>
+// #include "secure_comm.h"
+
+// #define LORA_SS   15
+// #define LORA_RST  14
+// #define LORA_DIO0 26
+
+// void setup() {
+//   Serial.begin(115200);
+//   Serial.println("[RX] Secure LoRa Receiver Starting...");
+  
+//   LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
+//   if (!LoRa.begin(433E6)) {
+//     Serial.println("[RX] LoRa init failed!");
+//     while (true);
+//   }
+//   Serial.println("[RX] LoRa init OK.");
+// }
+
+// void loop() {
+//   int packetSize = LoRa.parsePacket();
+//   if (packetSize) {
+//     String received = "";
+//     while (LoRa.available()) {
+//       received += (char)LoRa.read();
+//     }
+
+//     Serial.println("[RX] Received encrypted packet:");
+//     Serial.println(received);
+
+//     String decrypted = decryptAndVerify(received);
+//     if (decrypted != "") {
+//       Serial.println("[RX]  HMAC OK! Decrypted payload:");
+//       Serial.println(decrypted);
+//     }
+//   }
+// }
+
+// Added INF Handle
+// #include <Arduino.h>
+// #include <LoRa.h>
+// #include "secure_comm.h"
+// #include "network_manager.h"
+
+// #define LORA_SS   15
+// #define LORA_RST  14
+// #define LORA_DIO0 26
+
+// void setup() {
+//   Serial.begin(115200);
+//   Serial.println("[RX] Secure LoRa Receiver Starting...");
+
+//   setupNetwork();  // WiFi + MQTT
+
+//   LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
+//   if (!LoRa.begin(433E6)) {
+//     Serial.println("[RX] LoRa init failed!");
+//     while (true);
+//   }
+//   Serial.println("[RX] LoRa init OK.");
+// }
+
+// void loop() {
+//   mqttLoop();
+
+//   int packetSize = LoRa.parsePacket();
+//   if (packetSize) {
+//     String received = "";
+//     while (LoRa.available()) {
+//       received += (char)LoRa.read();
+//     }
+
+//     Serial.println("[RX] Received encrypted packet:");
+//     Serial.println(received);
+
+//     String decrypted = decryptAndVerify(received);
+//     if (decrypted != "") {
+//       Serial.println("[RX] ✅ HMAC OK! Decrypted payload:");
+//       Serial.println(decrypted);
+
+//       // Publish ke MQTT
+//       mqttPublish("lora/secure_gateway", decrypted);
+//     }
+//   }
+// }
 #include <Arduino.h>
 #include <LoRa.h>
 #include "secure_comm.h"
+#include "network_manager.h"
 
 #define LORA_SS   15
 #define LORA_RST  14
@@ -166,16 +255,20 @@
 void setup() {
   Serial.begin(115200);
   Serial.println("[RX] Secure LoRa Receiver Starting...");
-  
+
+  setupNetwork();  // WiFi + MQTT setup
+
   LoRa.setPins(LORA_SS, LORA_RST, LORA_DIO0);
   if (!LoRa.begin(433E6)) {
-    Serial.println("[RX] LoRa init failed!");
+    Serial.println("[RX] ❌ LoRa init failed!");
     while (true);
   }
-  Serial.println("[RX] LoRa init OK.");
+  Serial.println("[RX] ✅ LoRa init OK.");
 }
 
 void loop() {
+  mqttLoop();
+
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     String received = "";
@@ -188,8 +281,15 @@ void loop() {
 
     String decrypted = decryptAndVerify(received);
     if (decrypted != "") {
-      Serial.println("[RX]  HMAC OK! Decrypted payload:");
+      // Pastikan JSON lengkap (ada tanda '}' di akhir)
+      if (!decrypted.endsWith("}")) {
+        decrypted += "}";
+      }
+
+      Serial.println("[RX] ✅ HMAC OK! Decrypted payload:");
       Serial.println(decrypted);
+
+      mqttPublish("lora/secure_gateway", decrypted);
     }
   }
 }
